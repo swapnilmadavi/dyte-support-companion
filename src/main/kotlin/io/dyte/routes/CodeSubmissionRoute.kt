@@ -1,5 +1,7 @@
 package io.dyte.routes
 
+import io.dyte.appendCodeSnippetToBuffer
+import io.dyte.codeBuffer
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*
@@ -10,8 +12,17 @@ fun Route.codeSubmissionRoute() {
     route("code/submit") {
         post {
             val codeSnippet = call.receiveText()
-            println("DyteHack: $codeSnippet")
-            call.respondText("Code snippet submitted", status = HttpStatusCode.Accepted)
+            val response = StringBuilder()
+            response.appendLine("Existing code")
+            response.appendLine(codeBuffer.toString())
+            response.appendLine()
+            response.appendLine("Received code snippet =>")
+            response.appendLine(codeSnippet)
+            response.appendLine()
+            appendCodeSnippetToBuffer(codeSnippet)
+            response.appendLine("Merged code =>")
+            response.appendLine(codeBuffer.toString())
+            call.respondText(response.toString(), status = HttpStatusCode.Accepted)
         }
     }
 }

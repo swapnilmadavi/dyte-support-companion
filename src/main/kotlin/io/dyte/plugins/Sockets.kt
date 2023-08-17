@@ -1,5 +1,7 @@
 package io.dyte.plugins
 
+import io.dyte.askOpenAiToFindIssuesInCode
+import io.dyte.openAIClient
 import io.ktor.server.application.*
 import io.ktor.server.routing.*
 import io.ktor.server.websocket.*
@@ -22,6 +24,13 @@ fun Application.configureSockets() {
                 val receivedText = frame.readText()
                 println("DyteHack: $receivedText")
                 send("You said: $receivedText")
+                if (receivedText == "review") {
+                    openAIClient?.let {ai ->
+//                        launch {
+                            askOpenAiToFindIssuesInCode(ai)
+//                        }
+                    }
+                }
             }
         }
     }
