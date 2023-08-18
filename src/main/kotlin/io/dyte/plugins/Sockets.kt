@@ -1,14 +1,17 @@
 package io.dyte.plugins
 
-import io.dyte.askOpenAiToFindIssuesInCode
-import io.dyte.openAIClient
+import com.aallam.openai.api.BetaOpenAI
+import com.aallam.openai.client.OpenAI
+import io.dyte.codeBuffer
+import io.dyte.reviewCodeSnippet
 import io.ktor.server.application.*
 import io.ktor.server.routing.*
 import io.ktor.server.websocket.*
 import io.ktor.websocket.*
 import java.time.Duration
 
-fun Application.configureSockets() {
+@OptIn(BetaOpenAI::class)
+fun Application.configureSockets(openAI: OpenAI) {
     install(WebSockets) {
         pingPeriod = Duration.ofSeconds(15)
         timeout = Duration.ofSeconds(15)
@@ -25,11 +28,9 @@ fun Application.configureSockets() {
                 println("DyteHack: $receivedText")
                 send("You said: $receivedText")
                 if (receivedText == "review") {
-                    openAIClient?.let {ai ->
-//                        launch {
-                            askOpenAiToFindIssuesInCode(ai)
-//                        }
-                    }
+                    val chatCompletion = reviewCodeSnippet(openAI, codeBuffer.toString())
+                    // clear code buffer to form next snippet
+                    codeBuffer.clear()
                 }
             }
         }

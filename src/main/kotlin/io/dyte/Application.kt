@@ -11,25 +11,27 @@ import com.aallam.openai.client.LoggingConfig
 import com.aallam.openai.client.OpenAI
 import io.dyte.plugins.*
 import io.ktor.server.application.*
-import kotlinx.coroutines.launch
 
 fun main(args: Array<String>) {
-    val apiKey = "<ENTER_KEY_HERE>" //System.getenv("OPENAI_API_KEY")
-    val token = requireNotNull(apiKey) { "OPENAI_API_KEY environment variable must be set." }
-    openAIClient = OpenAI(token = token, logging = LoggingConfig(LogLevel.All))
-    println("DyteHack: OpenAI initialized")
     io.ktor.server.netty.EngineMain.main(args)
 }
 
 fun Application.module() {
+    val apiKey = "<ENTER_KEY_HERE>" //System.getenv("OPENAI_API_KEY")
+    val token = requireNotNull(apiKey) { "OPENAI_API_KEY environment variable must be set." }
+    val openAI = configureOpenAi(token)
     configureSerialization()
-    configureRouting()
-    configureSockets()
+    configureRouting(openAI)
+    configureSockets(openAI)
 }
 
-internal var openAIClient: OpenAI? = null
+private fun configureOpenAi(token: String): OpenAI {
+    return OpenAI(token = token, logging = LoggingConfig(LogLevel.All))
+}
+
 
 val codeBuffer: StringBuilder = StringBuilder()
+
 fun appendCodeSnippetToBuffer(codeSnippet: String) {
     if (codeBuffer.isEmpty()) {
         codeBuffer.append(codeSnippet)
@@ -51,22 +53,22 @@ fun appendCodeSnippetToBuffer(codeSnippet: String) {
 }
 
 @OptIn(BetaOpenAI::class)
-internal suspend fun askOpenAiToFindIssuesInCode(openAI: OpenAI) {
-    println("DyteHack: askOpenAiToFindIssuesInCode")
+internal suspend fun reviewCodeSnippet(openAI: OpenAI, codeSnippet: String): ChatCompletion {
     val chatCompletionRequest = ChatCompletionRequest(
         model = ModelId("gpt-3.5-turbo"),
         messages = listOf(
             ChatMessage(
                 role = ChatRole.System,
-                content = "You will be provided with a code snippets, and your task is to find and fix bugs in it."
+                content = "You will be provided with a code snippet, and your task is to find and fix bugs in it."
             ),
             ChatMessage(
                 role = ChatRole.User,
-                content = codeBuffer.toString()
+                content = codeSnippet
             )
         )
     )
     val completion: ChatCompletion = openAI.chatCompletion(chatCompletionRequest)
-    println("DyteHack: openAI response =>")
+    println("DyteHack: openAI reviewCodeSnippet response =>")
     println(completion)
+    return completion
 }
