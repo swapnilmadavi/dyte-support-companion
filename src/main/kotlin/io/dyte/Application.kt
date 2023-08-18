@@ -17,8 +17,8 @@ fun main(args: Array<String>) {
 }
 
 fun Application.module() {
-    val apiKey = "<ENTER_KEY_HERE>" //System.getenv("OPENAI_API_KEY")
-    val token = requireNotNull(apiKey) { "OPENAI_API_KEY environment variable must be set." }
+    val openAiApiKey = System.getenv("OPENAI_API_KEY")
+    val token = requireNotNull(openAiApiKey) { "OPENAI_API_KEY environment variable must be set." }
     val openAI = configureOpenAi(token)
     configureSerialization()
     configureRouting(openAI)
