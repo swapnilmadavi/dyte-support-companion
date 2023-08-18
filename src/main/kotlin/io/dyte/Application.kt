@@ -23,6 +23,7 @@ fun Application.module() {
     configureSerialization()
     configureRouting(openAI)
     configureSockets(openAI)
+    configureCors()
 }
 
 private fun configureOpenAi(token: String): OpenAI {
