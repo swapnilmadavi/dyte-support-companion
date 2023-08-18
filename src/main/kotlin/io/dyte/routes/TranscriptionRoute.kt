@@ -13,14 +13,20 @@ import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
 
 @OptIn(BetaOpenAI::class)
 fun Route.transcriptionRoute(openAI: OpenAI) {
     route("transcription") {
         post {
             val transcription = call.receive<Transcription>()
-            val completion = extractKeywordsFromTranscription(openAI, transcription)
-            call.respondText(completion.toString(), status = HttpStatusCode.OK)
+            val chatCompletion = extractKeywordsFromTranscription(openAI, transcription)
+            val jsonResponse = buildJsonObject {
+                put("result", chatCompletion.choices.firstOrNull()?.message?.content)
+            }
+
+            call.respond(status = HttpStatusCode.OK, jsonResponse)
         }
     }
 }
