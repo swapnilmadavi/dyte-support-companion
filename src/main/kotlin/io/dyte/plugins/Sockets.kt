@@ -4,6 +4,7 @@ import com.aallam.openai.api.BetaOpenAI
 import com.aallam.openai.client.OpenAI
 import io.dyte.codeBuffer
 import io.dyte.reviewCodeSnippet
+import io.dyte.wsSession
 import io.ktor.server.application.*
 import io.ktor.server.routing.*
 import io.ktor.server.websocket.*
@@ -21,6 +22,7 @@ fun Application.configureSockets(openAI: OpenAI) {
 
     routing {
         webSocket("code/issues") {
+            wsSession = this
             send("You are connected!")
             for(frame in incoming) {
                 frame as? Frame.Text ?: continue

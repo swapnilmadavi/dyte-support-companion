@@ -11,6 +11,8 @@ import com.aallam.openai.client.LoggingConfig
 import com.aallam.openai.client.OpenAI
 import io.dyte.plugins.*
 import io.ktor.server.application.*
+import io.ktor.server.websocket.*
+import io.ktor.websocket.*
 
 fun main(args: Array<String>) {
     io.ktor.server.netty.EngineMain.main(args)
@@ -32,6 +34,7 @@ private fun configureOpenAi(token: String): OpenAI {
 
 
 val codeBuffer: StringBuilder = StringBuilder()
+internal var wsSession: DefaultWebSocketServerSession? = null
 
 fun appendCodeSnippetToBuffer(codeSnippet: String) {
     if (codeBuffer.isEmpty()) {
@@ -73,3 +76,13 @@ internal suspend fun reviewCodeSnippet(openAI: OpenAI, codeSnippet: String): Cha
     println(completion)
     return completion
 }
+
+/*@OptIn(BetaOpenAI::class)
+internal suspend fun reviewCodeAndSendResult(openAI: OpenAI, codeSnippet: String, wsSession: DefaultWebSocketServerSession) {
+    val chatCompletion = reviewCodeSnippet(openAI, codeSnippet)
+    chatCompletion?.choices?.firstOrNull()?.message?.content?.let {
+        if (it.isNotBlank()) {
+            wsSession.send(it)
+        }
+    }
+}*/
